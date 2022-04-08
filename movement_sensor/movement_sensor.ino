@@ -49,6 +49,14 @@ void setup(){
 
 void loop(){
   //debug();
+  if(!client.connected()){
+    if(client.connect(clientID)){
+      Serial.println("RECONNECTED TO MQTT SERVER");
+    }else{
+      Serial.print("bruh");
+    }
+  }
+  
   if(digitalRead(36)){
     Serial.print("MOVEMENT DETECTED - VALUE : ");
     Serial.println(digitalRead(36));
@@ -57,10 +65,11 @@ void loop(){
     
     M5.Lcd.fillScreen(RED); //Alerte visuelle (test de dev)
     Serial.println("movement detector going afk");
-    delay(5000); //5 secondes
-    M5.Lcd.fillScreen(GREEN);
+    delay(10000); //10 secondes
+    M5.Lcd.fillScreen(WHITE);
     
-    delay(5000);
+    delay(20000);//20 secondes
+    M5.Lcd.fillScreen(GREEN);
     Serial.println("movement detector going active");
   }
 }
