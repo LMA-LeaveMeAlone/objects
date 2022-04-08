@@ -1,3 +1,4 @@
+#include <M5StickC.h>
 #include <WiFi.h>
 #include "PubSubClient.h"
 
@@ -10,6 +11,8 @@ const char* mqtt_server = "192.168.43.254";
 const char* topic = "/sensor/movement";
 
 const char* clientID = "sensor_movement";
+
+boolean isSensorActive = true;
 
 WiFiClient wifiClient;
 PubSubClient client(mqtt_server, 1883, wifiClient);
@@ -33,19 +36,39 @@ void setup(){
 
   if(client.connect(clientID)){
     Serial.println("Connected to MQTT Broker!");
-    sendAlert();
   }else{
     Serial.print("Connection to MQTT Broker failed...");
   }
-}
 
-void sendAlert(){
-  if(client.publish(topic, "alert")){
-    Serial.println("alert sent!");
-  }
+  M5.begin();
+  M5.Lcd.setRotation(3);
+  M5.Lcd.fillScreen(GREEN);
+
+  pinMode(36, INPUT_PULLUP);
 }
 
 void loop(){
-  Serial.println("start sending events.");
-  delay(5000);
+  //debug();
+  if(digitalRead(36)){
+    Serial.print("MOVEMENT DETECTED - VALUE : ");
+    Serial.println(digitalRead(36));
+    
+    client.publish(topic, "alert");
+    
+    M5.Lcd.fillScreen(RED); //Alerte visuelle (test de dev)
+    Serial.println("movement detector going afk");
+    delay(5000); //5 secondes
+    M5.Lcd.fillScreen(GREEN);
+    
+    delay(5000);
+    Serial.println("movement detector going active");
+  }
+}
+
+void debug(){
+  Serial.println("----- DEBUG -----");
+  Serial.print("PIR state : ");
+  Serial.println(digitalRead(36));
+  Serial.println("-----------------");
+  delay(500);
 }
