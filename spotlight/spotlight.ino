@@ -1,12 +1,12 @@
 #include <WiFi.h>
 #include "PubSubClient.h"
-#include <M5StickC.h>
+#include <M5Atom.h>
 const char* ssid = "ArduinoWifiShield";
 const char* password = "woufwouf06";
 static const char* connectionString = "";
 const char* mqtt_server = "192.168.43.254";
-const char* alert_topic = "/alarm";
-const char* clientID = "alarm";
+const char* alert_topic = "/spotlight";
+const char* clientID = "spotlight";
 const int spk_pin = 26;
 int freq = 30;
 int channel = 0;
@@ -20,24 +20,19 @@ int alarmOn = false;
 void callback(char* topic, byte *payload, unsigned int length){ 
   Serial.println("-------Nouveau message du broker mqtt-------");
   if ((char)payload[0] == '1') {
-     Serial.println("RECEIVED ALARM ON");
-     alarmOn = true;
+     Serial.println("RECEIVED SPOTLIGHT ON");
+     M5.dis.fillpix(0xffffff);
    } else {
-     Serial.println("RECEIVED ALARM OFF");
-     alarmOn = false;
+     Serial.println("RECEIVED SPOTLIGHT OFF");
+     M5.dis.fillpix(0x000000);
    }
-
 }
 void setup(){
   Serial.begin(115200);
-  Serial.println("test");
-  M5.begin();
-  ledcSetup(channel, freq, resolution);
-  ledcAttachPin(spk_pin, channel);
-  ledcWrite(channel, 256);
-  ledcWriteTone(channel, 0);
+  M5.begin(true, false, true);
+  delay(50);
+  M5.dis.fillpix(0x000000);
   Serial.println("Starting connection WiFi.");
-  delay(10);
   WiFi.begin(ssid, password);
   while(WiFi.status() != WL_CONNECTED){
     delay(500);
@@ -59,17 +54,4 @@ void setup(){
 
 void loop(){
   client.loop();
-  if(alarmOn == true){
-    for (int x = 0; x < 360; x += 20) {
-      sinVal = sin(x * (PI / 180));
-      toneVal = 2000 + sinVal * 500;
-      ledcWriteTone(channel, toneVal);
-      delay(15);
-      ledcWriteTone(channel, 0);
-    }
-  }
-  if(alarmOn == false){
-    ledcWriteTone(channel, 0);
-  }
-  
 }
